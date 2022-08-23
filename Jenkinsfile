@@ -8,30 +8,39 @@ pipeline {
   agent any
   stages {
     stage('Checkout') {
-      checkout scm
+      steps {
+      	checkout scm
+      }
     }
 
     stage('Build') {
-    	script {
-        	dockerImage = docker.build imageName
-    	}
+    	steps {
+    		script {
+			dockerImage = docker.build imageName
+	    	}
+	}
     }
     
     stage('Deploy') {
-    	script {
-        	docker.withRegistry('') {
-        		dockerImage.push('latest')
-        	}
-    	}
-        
+    	steps{
+	    	script {
+			docker.withRegistry('') {
+				dockerImage.push('latest')
+			}
+	    	}
+        }
     }
     
     stage('Rollout') {
-        sh 'kubectl --kubeconfig /etc/kubernetes/kubeconfig --server "https://${KUBE_SERVER}" --token="${SERVICE_ACCOUNT_TOKEN}" rollout restart deployment php'
+    	steps {
+        	sh 'kubectl --kubeconfig /etc/kubernetes/kubeconfig --server "https://${KUBE_SERVER}" --token="${SERVICE_ACCOUNT_TOKEN}" rollout restart deployment php'
+    	}
     }
     
     stage('Cleanup') {
-        sh "docker rmi $imagename:latest"
+    	steps {
+        	sh "docker rmi $imagename:latest"
+    	}
     }
   }
 }
