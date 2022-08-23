@@ -3,7 +3,6 @@
 pipeline {
   environment {
     imageName = "remusnastasa/my-php"
-    buildNumber = "${GIT_REVISION,length=9}"
     dockerImage = ''
   }
   agent any
@@ -21,7 +20,6 @@ pipeline {
     stage('Deploy') {
     	script {
         	docker.withRegistry('') {
-        		dockerImage.push(buildNumber)
         		dockerImage.push('latest')
         	}
     	}
@@ -33,10 +31,7 @@ pipeline {
     }
     
     stage('Cleanup') {
-    	steps {
-    		sh "docker rmi $imagename:$buildNumber"
-        	sh "docker rmi $imagename:latest"
-    	}
+        sh "docker rmi $imagename:latest"
     }
   }
 }
